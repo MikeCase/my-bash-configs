@@ -106,7 +106,7 @@ backup() {
 # for a "system backup" quick and easy.
 # My code
 sysbackup() {
-    DEST_DIR=$BACKUP_SYS
+    DEST_DIR=${BACKUP_SYS}
 
     BACKUP_SOURCES=${BASE_CONFIG}.backup_sources
 
@@ -127,7 +127,7 @@ sysbackup() {
         mkdir ${DEST_DIR}
     fi
 
-    for d in "${SOURCES[@]}"; do
+    for d in "${BACKUP_SOURCES[@]}"; do
         if [ -d "$d" ]; then
             cd "${d}" || return
             BAK_FILE=${PWD##*/}-$(date +%-Y%-m%-d)$(date +%-H%M%S).tgz
