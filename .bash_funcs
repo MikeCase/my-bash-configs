@@ -162,7 +162,7 @@ tunneler() {
     fi
 
 
-    read -p "SSH Connectiion [user@host]: " constring
+    read -p "SSH Connection [user@host]: " constring
     if [ -z $constring ]; then
         echo 'You must provide a connection string (user@host)'
         exit 1
