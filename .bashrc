@@ -8,6 +8,13 @@ case $- in
       *) return;;
 esac
 
+# Base config directory. All my extras...
+BASE_CONFIG=~/.config/bash-config/
+
+ALIASES=${BASE_CONFIG}.bash_aliases
+FUNCTIONS=${BASE_CONFIG}.bash_funcs
+VARS=${BASE_CONFIG}.bash_vars
+
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -101,13 +108,21 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
-fi
-if [ -f ~/.bash_funcs ]; then
-    . ~/.bash_funcs
+if [ -f "$ALIASES" ]; then
+    . ${ALIASES}
 fi
 
+# Function definitions.
+# All functions are in the below file.
+if [ -f $FUNCTIONS ]; then
+    . ${FUNCTIONS}
+fi
+
+# Variables.
+# Additional defines variables I want available.
+if [ -f $VARS ]; then
+    . ${VARS}
+fi
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
