@@ -1,57 +1,174 @@
-bookmark_file=~/.bookmarks
-source $bookmark_file
+#!/usr/bin/env bash
+
+
+## Create directory bookmarks
+# Not my code.
+bookmark_file=${BASE_CONFIG}.bookmarks
+. $bookmark_file
 
 bm() {
-usage='Usage:
-bm add <name> <path>           Create a bookmark for path.
-bm add <name>                  Create a bookmark for the current directory.
-bm update                      Source the bookmark file.
-bm remove <name>               Remove a bookmark'              
+    usage='Usage:
+    bm add <name> <path>           Create a bookmark for path.
+    bm add <name>                  Create a bookmark for the current directory.
+    bm update                      Source the bookmark file.
+    bm remove <name>               Remove a bookmark'
 
-case $1 in
-    add)
-        local path
-        if [[ $# -eq 2 ]]; then
-            path=.
-        elif [[ $# -eq 3 ]]; then
-            if [[ -e $3 ]]; then
-                path="$3"
+    case $1 in
+        add)
+            local path
+            if [[ $# -eq 2 ]]; then
+                path=.
+            elif [[ $# -eq 3 ]]; then
+                if [[ -e $3 ]]; then
+                    path="$3"
+                else
+                    echo "bm: ${3}: No such file or directory."
+                    return 1
+                fi
             else
-                echo "bm: ${3}: No such file or directory."
+                echo "$usage"
                 return 1
-            fi               
-        else
-            echo "$usage"
-            return 1
-        fi
+            fi
 
-        if declare | grep "^${2}=" > /dev/null; then
-            echo "bm: The name $2 is in use."
-            return 1
-        fi
-        path=$(readlink -f "$path")
-        echo ${2}=\""$path"\" >> "$bookmark_file"
-        eval ${2}=\""$path"\"
-        return 0
-        ;;
-    update)
-        if [[ $# -eq 1 ]]; then
-            source "$bookmark_file"
+            if declare | grep "^${2}=" > /dev/null; then
+                echo "bm: The name $2 is in use."
+                return 1
+            fi
+            path=$(readlink -f "$path")
+            echo ${2}=\""$path"\" >> "$bookmark_file"
+            eval ${2}=\""$path"\"
             return 0
-        fi
-        ;;
-    remove)
-        if [[ $# -eq 2 ]]; then
-            unset $2
-            local contents=$(grep -v "^${2}=" "$bookmark_file")
-            echo "$contents" > "${bookmark_file}.tmp"
-            rm -f "$bookmark_file"
-            mv "${bookmark_file}.tmp" "$bookmark_file"
-            return 0
-        fi
-        ;;
-esac
+            ;;
+        update)
+            if [[ $# -eq 1 ]]; then
+                source "$bookmark_file"
+                return 0
+            fi
+            ;;
+        remove)
+            if [[ $# -eq 2 ]]; then
+                unset $2
+                local contents=$(grep -v "^${2}=" "$bookmark_file")
+                echo "$contents" > "${bookmark_file}.tmp"
+                rm -f "$bookmark_file"
+                mv "${bookmark_file}.tmp" "$bookmark_file"
+                return 0
+            fi
+            ;;
+    esac
 
-echo "$usage"
-return 1
+    echo "$usage"
+    return 1
+}
+
+## Extract any archive
+# Not my code.
+extract() {
+    if [ -f $1 ] ; then
+        case $1 in
+            *.tar.bz2)   tar xjf $1     ;;
+            *.tar.gz)    tar xzf $1     ;;
+            *.bz2)       bunzip2 $1     ;;
+            *.rar)       unrar e $1     ;;
+            *.gz)        gunzip $1      ;;
+            *.tar)       tar xf $1      ;;
+            *.tbz2)      tar xjf $1     ;;
+            *.tgz)       tar xzf $1     ;;
+            *.zip)       unzip $1       ;;
+            *.Z)         uncompress $1  ;;
+            *.7z)        7z x $1        ;;
+            *)
+            echo "'$1' cannot be extracted via extract()" ;;
+        esac
+    else
+        echo "'$1' is not a valid file"
+    fi
+}
+
+# Backup and individual directory
+# My code.
+backup() {
+    SRC_DIR=${PWD}
+    DEST_DIR=/home/splaq/backups/individual-backups/
+
+    if [ ! -d $DEST_DIR ]; then
+        mkdir -p ${DEST_DIR}
+    fi
+
+    BAK_FILE=${PWD##*/}-$(date +%-Y%-m%-d)$(date +%-H%M%S).tgz
+
+    tar --create --gzip --file=$DEST_DIR$BAK_FILE -C $SRC_DIR *
+
+}
+
+# Backup a collection of files/directories.
+# Essentially a self defined set of files
+# for a "system backup" quick and easy.
+# My code
+sysbackup() {
+    DEST_DIR=/home/splaq/backups/system-backups/
+
+    BACKUP_SOURCES=${BASE_CONFIG}.backup_sources
+
+    if [ -f "$BACKUP_SOURCES" ] && ! [ -s "$BACKUP_SOURCES" ]; then
+        echo "The file is created, you must go populate the file now."
+        return 1
+    elif ! [ -f "$BACKUP_SOURCES" ]; then
+        touch "$BACKUP_SOURCES"
+        echo "Put the directories/files you want to backup into $BACKUP_SOURCES"
+        return 1
+    elif [ -f "$BACKUP_SOURCES" ]; then
+        . "${BACKUP_SOURCES}"
+    fi
+
+    INDV_FILES=()
+
+    if [ ! -d $DEST_DIR ]; then
+        mkdir ${DEST_DIR}
+    fi
+
+    for d in "${SOURCES[@]}"; do
+        if [ -d "$d" ]; then
+            cd "${d}" || return
+            BAK_FILE=${PWD##*/}-$(date +%-Y%-m%-d)$(date +%-H%M%S).tgz
+            tar --create --gzip --file="${DEST_DIR}${BAK_FILE}" -C "$d" -- *
+        fi
+        if [ -f "$d" ]; then
+            INDV_FILES+=("${d}")
+        fi
+    done
+
+    for f in "${INDV_FILES[@]}"; do
+        BAK_FILE="indv_files-$(date +%-Y%-m%-d)$(date +%-H%M%S)"
+        tar --append --file="${DEST_DIR}${BAK_FILE}" -C "${f%/*}" "${f##*/}"
+    done
+        gzip -S ".tgz" "${DEST_DIR}${BAK_FILE}"
+}
+
+tunneler() {
+    read -p "Local tunnel port [2500]: " lport
+    if [ -z $lport ]; then
+        lport='2500'
+    fi
+
+    read -p "Remote service port [80]: " rport
+    if [ -z $rport ]; then
+        rport='80'
+    fi
+
+    read -p "Remote service local IP address [127.0.0.1]: " r_ip
+    if [ -z $r_ip ]; then
+        r_ip='127.0.0.1'
+    fi
+
+
+    read -p "SSH Connectiion [user@host]: " constring
+    if [ -z $constring ]; then
+        echo 'You must provide a connection string (user@host)'
+        exit 1
+    fi
+
+    echo "To access your tunneled service goto https://127.0.0.1:$lport"
+
+    ssh -L "$lport:$r_ip:$rport" "$constring"
 }
