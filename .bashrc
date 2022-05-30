@@ -9,7 +9,7 @@ case $- in
 esac
 
 # Base config directory. All my extras...
-BASE_CONFIG=~/.config/bash-config/
+BASE_CONFIG="${HOME}/.config/bash-config/"
 
 ALIASES=${BASE_CONFIG}.bash_aliases
 FUNCTIONS=${BASE_CONFIG}.bash_funcs

@@ -89,15 +89,15 @@ extract() {
 # My code.
 backup() {
     SRC_DIR=${PWD}
-    DEST_DIR=/home/splaq/backups/individual-backups/
+    DEST_DIR=${BACKUP_INDV}
 
-    if [ ! -d $DEST_DIR ]; then
-        mkdir -p ${DEST_DIR}
+    if [ ! -d "$DEST_DIR" ]; then
+        mkdir -p "${DEST_DIR}"
     fi
 
     BAK_FILE=${PWD##*/}-$(date +%-Y%-m%-d)$(date +%-H%M%S).tgz
 
-    tar --create --gzip --file=$DEST_DIR$BAK_FILE -C $SRC_DIR *
+    tar --create --gzip --file="${DEST_DIR}${BAK_FILE}" -C "$SRC_DIR" *
 
 }
 
@@ -106,7 +106,7 @@ backup() {
 # for a "system backup" quick and easy.
 # My code
 sysbackup() {
-    DEST_DIR=/home/splaq/backups/system-backups/
+    DEST_DIR=$BACKUP_SYS
 
     BACKUP_SOURCES=${BASE_CONFIG}.backup_sources
 
@@ -172,3 +172,4 @@ tunneler() {
 
     ssh -L "$lport:$r_ip:$rport" "$constring"
 }
+

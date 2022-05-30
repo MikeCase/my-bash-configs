@@ -1,2 +1,13 @@
 EDITOR='nano'
 
+
+
+BACKUP_BASE="${HOME}/.backups"
+BACKUP_SYS="${BACKUP_BASE}system_backup"
+BACKUP_INDV="${BACKUP_BASE}individual_backup"
+
+if [ ! -d $BACKUP_SYS ] || [ ! -d $BACKUP_INDV ]; then
+    mkdir -p $BACKUP_SYS
+    mkdir -p $BACKUP_INDV
+fi
+

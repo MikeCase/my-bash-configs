@@ -1,7 +1,4 @@
-export SOURCES=(
-    # /home/splaq/code/
-    # /home/splaq/.config/
-    /home/splaq/.bashrc
+BACKUP_SOURCES=(
     "${bookmark_file}"
     "${BASE_CONFIG}.bash_aliases"
     "${BASE_CONFIG}.bash_funcs"
