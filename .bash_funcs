@@ -11,7 +11,8 @@ bm() {
     bm add <name> <path>           Create a bookmark for path.
     bm add <name>                  Create a bookmark for the current directory.
     bm update                      Source the bookmark file.
-    bm remove <name>               Remove a bookmark'
+    bm remove <name>               Remove a bookmark
+    bm list                        List available bookmarks'
 
     case $1 in
         add)
@@ -52,6 +53,13 @@ bm() {
                 echo "$contents" > "${bookmark_file}.tmp"
                 rm -f "$bookmark_file"
                 mv "${bookmark_file}.tmp" "$bookmark_file"
+                return 0
+            fi
+            ;;
+        # My addition, list available bookmarks.
+        list)
+            if [ -e "$bookmark_file" ]; then
+                cat "$bookmark_file"
                 return 0
             fi
             ;;
