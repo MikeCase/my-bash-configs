@@ -4,7 +4,7 @@
 ## Create directory bookmarks
 # Not my code.
 bookmark_file=${BASE_CONFIG}.bookmarks
-. $bookmark_file
+. "$bookmark_file"
 
 bm() {
     usage='Usage:
@@ -85,19 +85,53 @@ extract() {
     fi
 }
 
+
 # Backup and individual directory
 # My code.
 backup() {
     SRC_DIR=${PWD}
     DEST_DIR=${BACKUP_INDV}
 
+    ## Quick fix: If you remove things from the backup list without
+    ## unsetting BACKUP_SOURCES it adds the next source as
+    ## whatever the last source WAS + 1, so if you only have
+    ## 3 items in backup sources it would list as item 5, not 4.
+    ## That doesn't make much sense. Basically this resets BACKUP_SOURCES to exactly
+    ## what is in the .backup_sources file.
+    unset BACKUP_SOURCES
+    source "${BASE_CONFIG}.backup_sources"
+
+
     if [ ! -d "$DEST_DIR" ]; then
         mkdir -p "${DEST_DIR}"
     fi
 
-    BAK_FILE=${PWD##*/}-$(date +%-Y%-m%-d)$(date +%-H%M%S).tgz
 
-    tar --create --gzip --file="${DEST_DIR}${BAK_FILE}" -C "$SRC_DIR" *
+    if [ -f "${BASE_CONFIG}".backup_sources ]; then
+        source "${BASE_CONFIG}".backup_sources
+        case $SRC_DIR in
+            "/etc")
+                if ! [ $UID -eq 0 ]; then
+                    echo "Protected directory, elevate privs."
+                else
+                    echo "Adding ${SRC_DIR##*/} to SystemBackup."
+                    echo "BACKUP_SOURCES[$((${#BACKUP_SOURCES[@]}+1))]=${SRC_DIR}" >> "${BASE_CONFIG}".backup_sources
+                fi
+                ;;
+            *)
+                echo "Adding ${SRC_DIR##*/} to SystemBackup."
+                echo "BACKUP_SOURCES[$((${#BACKUP_SOURCES[@]}+1))]=${SRC_DIR}" >> "${BASE_CONFIG}".backup_sources
+            ;;
+        esac
+    else
+        echo "No .backup_sources found. Creating one."
+        touch "${BASE_CONFIG}.backup_sources"
+        echo "Try again."
+    fi
+
+    # BAK_FILE=${PWD##*/}-$(date +%-Y%-m%-d)$(date +%-H%M%S).tgz
+
+    # tar --create --gzip --file="${DEST_DIR}${BAK_FILE}" -C "$SRC_DIR" *
 
 }
 
@@ -111,7 +145,7 @@ sysbackup() {
     BACKUP_SOURCES=${BASE_CONFIG}.backup_sources
 
     if [ -f "$BACKUP_SOURCES" ] && ! [ -s "$BACKUP_SOURCES" ]; then
-        echo "The file is created, you must go populate the file now."
+        echo "Now go run backup from any directory. It will add that directory to your system backup list."
         return 1
     elif ! [ -f "$BACKUP_SOURCES" ]; then
         touch "$BACKUP_SOURCES"
@@ -123,8 +157,8 @@ sysbackup() {
 
     INDV_FILES=()
 
-    if [ ! -d $DEST_DIR ]; then
-        mkdir ${DEST_DIR}
+    if [ ! -d "$DEST_DIR" ]; then
+        mkdir "${DEST_DIR}"
     fi
 
     for d in "${BACKUP_SOURCES[@]}"; do
@@ -145,7 +179,7 @@ sysbackup() {
         gzip -S ".tgz" "${DEST_DIR}${BAK_FILE}"
 }
 
-tunneler() {
+make_tunnel() {
     read -p "Local tunnel port [2500]: " lport
     if [ -z $lport ]; then
         lport='2500'
@@ -173,3 +207,36 @@ tunneler() {
     ssh -L "$lport:$r_ip:$rport" "$constring"
 }
 
+dorganize(){
+    ## Keep my downloads folder CLEAN & Organzied
+    for file in "${DLDIR}"*; do
+        if [ -f "${file}" ]; then
+            case "$file" in
+                *.iso)
+                    mv "$file" "${DLDIR}"ISOs/
+                ;;
+                *.pdf | *.csv | *.txt | *.xlsx | *.md)
+                    mv "$file" "${DLDIR}"documents/
+                ;;
+                *.tar.gz | *.7z | *.Z | *.tar.bz2 | *.bz2 | *.gz | *.zip | *.tbz2 | *.tgz | *.rar | *.tar)
+                    mv "$file" "${DLDIR}"archives/
+                ;;
+                *.deb)
+                    mv "$file" "${DLDIR}"deb_packages/
+                ;;
+                *.mp3 | *.ogg)
+                    mv "$file" "${DLDIR}"music/
+                ;;
+                *.wav)
+                    mv "$file" "${DLDIR}"SFX/
+                ;;
+                *.mpv | *.mp4 | *.avi | *.mpg | *.mpeg)
+                    mv "$file" "${DLDIR}"videos/
+                ;;
+                *.jpg | *.jpeg | *.png | *.tiff | *.bmp | *.webp)
+                    mv "$file" "${DLDIR}"images/
+                ;;
+            esac
+        fi
+    done
+}

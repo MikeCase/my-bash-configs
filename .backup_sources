@@ -1,6 +1,4 @@
-BACKUP_SOURCES=(
-    "${bookmark_file}"
-    "${BASE_CONFIG}.bash_aliases"
-    "${BASE_CONFIG}.bash_funcs"
-    "${BASE_CONFIG}.bash_vars"
-)
+BACKUP_SOURCES[1]="${bookmark_file}"
+BACKUP_SOURCES[2]="${BASE_CONFIG}.bash_aliases"
+BACKUP_SOURCES[3]="${BASE_CONFIG}.bash_funcs"
+BACKUP_SOURCES[4]="${BASE_CONFIG}.bash_vars"
