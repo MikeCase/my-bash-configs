@@ -1,9 +1,7 @@
-# My bash configs
+# MBC (Mike's Bash Config)
 
 These are my bash configs, bashrc, aliases and functions.
+To use `git clone https://github.com/MikeCase/my-bash-configs.git`
 
-The .bookmarks files is for the bm() function to add directory bookmarks.
-
-I.E. cd $book_mark_location
-
-for usage of the bm() func, just type bm
+After cloned, run mbc.sh install
+To remove run mbc.sh remove

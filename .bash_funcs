@@ -188,6 +188,8 @@ sysbackup() {
 }
 
 make_tunnel() {
+    ## Create an SSH tunnel.
+
     read -p "Local tunnel port [2500]: " lport
     if [ -z $lport ]; then
         lport='2500'
@@ -221,7 +223,7 @@ dorganize(){
         if [ -f "${file}" ]; then
             case "$file" in
                 *.iso)
-                    mv "$file" "${DLDIR}"ISOs/
+                    mv "$file" "${DLDIR}"images/
                 ;;
                 *.pdf | *.csv | *.txt | *.xlsx | *.md)
                     mv "$file" "${DLDIR}"documents/
@@ -242,7 +244,7 @@ dorganize(){
                     mv "$file" "${DLDIR}"videos/
                 ;;
                 *.jpg | *.jpeg | *.png | *.tiff | *.bmp | *.webp)
-                    mv "$file" "${DLDIR}"images/
+                    mv "$file" "${DLDIR}"pictures/
                 ;;
             esac
         fi
