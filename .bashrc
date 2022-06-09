@@ -9,11 +9,11 @@ case $- in
 esac
 
 # Base config directory. All my extras...
-BASE_CONFIG="${HOME}/.config/bash-config/"
+BASE_CONFIG="$HOME/.config/bash-config"
 
-ALIASES=${BASE_CONFIG}.bash_aliases
-FUNCTIONS=${BASE_CONFIG}.bash_funcs
-VARS=${BASE_CONFIG}.bash_vars
+ALIASES="$BASE_CONFIG/.bash_aliases"
+FUNCTIONS="$BASE_CONFIG/.bash_funcs"
+VARS="$BASE_CONFIG/.bash_vars"
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
